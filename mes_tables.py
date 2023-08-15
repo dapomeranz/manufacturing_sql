@@ -9,7 +9,6 @@ class Operation(MesBase):
     __tablename__ = "mes_operations"
 
     id = Column(Integer, primary_key=True)
-    erp_sequence = Column(Integer)
     operation_name = Column(String)
 
 
@@ -17,6 +16,7 @@ class Resource(MesBase):
     __tablename__ = "mes_resources"
 
     id = Column(Integer, primary_key=True)
+    operation_id = Column(Integer)
     resource_name = Column(String)
 
 
