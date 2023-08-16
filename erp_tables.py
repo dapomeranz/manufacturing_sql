@@ -31,7 +31,7 @@ class BillOfMaterials(ErpBase):
     id = Column(Integer, primary_key=True)
     product_id = Column(Integer)
     material_id = Column(Integer)
-    operation_id = Column(Integer)
+    operation_sequence = Column(Integer)
     quantity = Column(Float)
     uom = Column(String)
 
