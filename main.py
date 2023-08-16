@@ -1,5 +1,6 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from keys import DATABASE_URL
 from erp_tables import ErpBase
 from generate_process_data import generate_work_orders, process_work_orders
 from mes_tables import MesBase
@@ -21,8 +22,7 @@ def load_master_data_tables(engine):
         df.to_sql(file.split(".")[0], con=engine, if_exists="append", index=False)
 
 
-DATABASE_URL = "sqlite:///mfg_database.sqlite3"
-engine = create_engine(DATABASE_URL, echo=True)
+engine = create_engine(DATABASE_URL, connect_args={"sslmode": "require"})
 
 MesBase.metadata.drop_all(engine)
 ErpBase.metadata.drop_all(engine)

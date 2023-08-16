@@ -40,7 +40,7 @@ class Route(ErpBase):
 
     id = Column(Integer, primary_key=True)
     product_id = Column(Integer)
-    operation_name = Column(Integer)
+    operation_name = Column(String)
     sequence = Column(Integer)
 
 
