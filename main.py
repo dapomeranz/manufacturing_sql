@@ -1,6 +1,7 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from erp_tables import ErpBase, generate_work_orders
+from erp_tables import ErpBase
+from generate_process_data import generate_work_orders, process_work_orders
 from mes_tables import MesBase
 
 import os
@@ -33,5 +34,6 @@ session = Session()
 
 load_master_data_tables(engine)
 generate_work_orders(session)
+process_work_orders(session)
 session.commit()
 session.close()

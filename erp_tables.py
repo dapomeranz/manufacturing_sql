@@ -10,7 +10,6 @@ class WorkOrder(ErpBase):
 
     id = Column(Integer, primary_key=True)
     product_id = Column(Integer)
-    status_id = Column(Integer)
     start_date = Column(Date)
     complete_date = Column(Date)
     quantity = Column(Float)
