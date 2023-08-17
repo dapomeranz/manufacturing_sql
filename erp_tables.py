@@ -1,5 +1,5 @@
 # models.py
-from sqlalchemy import Column, Integer, String, Date, Float
+from sqlalchemy import Column, Integer, String, Date, DateTime, Float
 from sqlalchemy.ext.declarative import declarative_base
 
 ErpBase = declarative_base()
@@ -10,8 +10,9 @@ class WorkOrder(ErpBase):
 
     id = Column(Integer, primary_key=True)
     product_id = Column(Integer)
-    start_date = Column(Date)
-    complete_date = Column(Date)
+    planned_start_date = Column(Date)
+    actual_start_timestamp = Column(DateTime)
+    complete_timestamp = Column(DateTime)
     quantity = Column(Float)
     uom = Column(String)
 

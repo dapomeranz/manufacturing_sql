@@ -49,17 +49,3 @@ class ScrapLog(MesBase):
     work_order_id = Column(Integer)
     timestamp = Column(DateTime)
     quantity = Column(Float)
-
-
-class DataCaptureLog(MesBase):
-    __tablename__ = "mes_data_capture_logs"
-
-    id = Column(Integer, primary_key=True)
-    operation_id = Column(Integer)
-    resource_id = Column(Integer)
-    operator_id = Column(Integer)
-    work_order_id = Column(Integer)
-    timestamp = Column(DateTime)
-    data_point_name = Column(String)
-    value = Column(Float)
-    uom = Column(String)
