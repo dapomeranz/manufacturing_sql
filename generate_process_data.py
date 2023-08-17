@@ -79,7 +79,7 @@ def generate_inventory(session):
         )
 
 
-def process_route_step(session, work_order, route_step, is_last_step):
+def process_route_step(session, work_order, route_step, step_no, is_last_step):
     ## Get quantity from previous step or from work order quantity if first step
     quantity_in_progress = (
         session.query(CompleteLog)
@@ -123,39 +123,50 @@ def process_route_step(session, work_order, route_step, is_last_step):
     operator_options = [row.id for row in session.query(Operator)]
     operator = random.choice(operator_options)
 
+    ## Randomly generate time of day
+    day = work_order.actual_start_timestamp + timedelta(days=step_no)
+    random_time = timedelta(
+        hours=random.randint(0, 23),
+        minutes=random.randint(0, 59),
+        seconds=random.randint(0, 59),
+    )
+    random_timestamp = datetime.combine(day, datetime.min.time()) + random_time
+
     ## Randomly generate logs
     random_scrap_rate = random.randint(0, 4) * SCRAP_RATE
     if route_step.operation_name == "inspection":
         random_scrap_rate *= 2
     session.add(
         CompleteLog(
-            id=random.randint(10000, 99999),
+            id=random.randint(1000000, 9999999),
             operation_id=operation_id,
             resource_id=resource,
             operator_id=operator,
             work_order_id=work_order.id,
-            timestamp=datetime.today(),  # TODO
+            timestamp=random_timestamp,
             quantity=quantity_in_progress * (1 - random_scrap_rate),
         )
     )
     session.add(
         ScrapLog(
-            id=random.randint(10000, 99999),
+            id=random.randint(1000000, 9999999),
             operation_id=operation_id,
             resource_id=resource,
             operator_id=operator,
             work_order_id=work_order.id,
-            timestamp=datetime.today(),  # TODO
+            timestamp=random_timestamp,
             quantity=quantity_in_progress * random_scrap_rate,
         )
     )
 
     ## If final completion, update work order and inventory
     if is_last_step:
-        work_order.complete_date = datetime.today()  # TODO
-        inv = session.query(InventorySummary).filter(
-            InventorySummary.product_id == work_order.product_id
-        ).first()
+        work_order.complete_date = random_timestamp
+        inv = (
+            session.query(InventorySummary)
+            .filter(InventorySummary.product_id == work_order.product_id)
+            .first()
+        )
         inv.quantity += quantity_in_progress * (1 - random_scrap_rate)
 
 
@@ -173,5 +184,9 @@ def process_work_orders(session):
             if work_order.actual_start_timestamp + timedelta(days=i) > datetime.today():
                 break
             process_route_step(
-                session, work_order, route_step, i == len(ordered_route_steps) - 1
+                session,
+                work_order,
+                route_step,
+                i + 1,
+                i == len(ordered_route_steps) - 1,
             )
