@@ -162,7 +162,6 @@ def process_route_step(session, work_order, route_step, step_no, is_last_step):
 
     ## If final completion, update work order and inventory
     if is_last_step:
-        print("is last step")
         work_order.complete_timestamp = random_timestamp
         inv = (
             session.query(InventorySummary)
