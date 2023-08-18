@@ -160,7 +160,7 @@ def process_route_step(session, work_order, route_step, step_no, is_last_step):
         )
     )
 
-    ## If final completion, update work order and inventory
+    ## If final completion, update work order and inventory or create record
     if is_last_step:
         work_order.complete_timestamp = random_timestamp
         inv = (
