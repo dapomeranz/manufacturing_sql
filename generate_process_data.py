@@ -60,7 +60,9 @@ def generate_inventory(session):
             InventorySummary(
                 id=id,
                 product_id=material_id,
-                quantity=INVENTORY_START_QUANTITY,
+                quantity=INVENTORY_START_QUANTITY
+                if uom != "grams"
+                else INVENTORY_START_QUANTITY * 10,
                 uom=uom,
             )
         )
