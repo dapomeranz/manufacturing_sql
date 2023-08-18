@@ -136,6 +136,7 @@ def process_route_step(session, work_order, route_step, step_no, is_last_step):
     random_scrap_rate = random.randint(0, 4) * SCRAP_RATE
     if route_step.operation_name == "inspection":
         random_scrap_rate *= 2
+    scrap_quantity = round(quantity_in_progress * random_scrap_rate, 2)
     session.add(
         CompleteLog(
             id=random.randint(1000000, 9999999),
@@ -144,7 +145,7 @@ def process_route_step(session, work_order, route_step, step_no, is_last_step):
             operator_id=operator,
             work_order_id=work_order.id,
             timestamp=random_timestamp,
-            quantity=quantity_in_progress * (1 - random_scrap_rate),
+            quantity=quantity_in_progress - scrap_quantity,
         )
     )
     session.add(
@@ -155,19 +156,36 @@ def process_route_step(session, work_order, route_step, step_no, is_last_step):
             operator_id=operator,
             work_order_id=work_order.id,
             timestamp=random_timestamp,
-            quantity=quantity_in_progress * random_scrap_rate,
+            quantity=scrap_quantity,
         )
     )
 
     ## If final completion, update work order and inventory
     if is_last_step:
-        work_order.complete_date = random_timestamp
+        print("is last step")
+        work_order.complete_timestamp = random_timestamp
         inv = (
             session.query(InventorySummary)
             .filter(InventorySummary.product_id == work_order.product_id)
             .first()
         )
-        inv.quantity += quantity_in_progress * (1 - random_scrap_rate)
+        if inv is None:
+            uom = (
+                session.query(Product)
+                .filter(Product.id == work_order.product_id)
+                .first()
+                .uom
+            )
+            id = random.randint(10000, 99999)
+            session.add(
+                InventorySummary(
+                    id=id,
+                    product_id=work_order.product_id,
+                    quantity=quantity_in_progress - scrap_quantity,
+                    uom=uom,
+                )
+            )
+        inv.quantity += quantity_in_progress - scrap_quantity
 
 
 def process_work_orders(session):
@@ -183,10 +201,11 @@ def process_work_orders(session):
         for i, route_step in enumerate(ordered_route_steps):
             if work_order.actual_start_timestamp + timedelta(days=i) > datetime.today():
                 break
+            is_last_step = i + 1 == len(ordered_route_steps)
             process_route_step(
                 session,
                 work_order,
                 route_step,
                 i + 1,
-                i == len(ordered_route_steps) - 1,
+                is_last_step,
             )
