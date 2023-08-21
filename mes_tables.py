@@ -31,7 +31,6 @@ class CompleteLog(MesBase):
     __tablename__ = "mes_complete_logs"
 
     id = Column(Integer, primary_key=True)
-    operation_id = Column(Integer)
     resource_id = Column(Integer)
     operator_id = Column(Integer)
     work_order_id = Column(Integer)
@@ -43,7 +42,6 @@ class ScrapLog(MesBase):
     __tablename__ = "mes_scrap_logs"
 
     id = Column(Integer, primary_key=True)
-    operation_id = Column(Integer)
     resource_id = Column(Integer)
     operator_id = Column(Integer)
     work_order_id = Column(Integer)

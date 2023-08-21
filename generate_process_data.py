@@ -14,7 +14,7 @@ from mes_tables import CompleteLog, Operation, Operator, Resource, ScrapLog
 
 def generate_work_orders(session):
     for _ in range(NUMBER_OF_WORK_ORDERS):
-        id = random.randint(500000, 599999)
+        id = random.randint(5000000, 5999999)
 
         product_ids = [
             row.product_id for row in session.query(BillOfMaterials).distinct().all()
@@ -45,7 +45,7 @@ def generate_work_orders(session):
                 product_id=product_id,
                 planned_start_date=planned_start_date,
                 actual_start_timestamp=actual_start_timestamp,
-                quantity=quantity,
+                original_quantity=quantity,
                 uom=uom,
             )
         )
@@ -55,7 +55,7 @@ def generate_inventory(session):
     for bom_row in session.query(BillOfMaterials.material_id).distinct().all():
         material_id = bom_row.material_id
         uom = session.query(Product).filter(Product.id == material_id).first().uom
-        id = random.randint(10000, 99999)
+        id = random.randint(100000, 999999)
         session.add(
             InventorySummary(
                 id=id,
@@ -70,7 +70,7 @@ def generate_inventory(session):
     for bom_row in session.query(BillOfMaterials.product_id).distinct().all():
         product_id = bom_row.product_id
         uom = session.query(Product).filter(Product.id == product_id).first().uom
-        id = random.randint(10000, 99999)
+        id = random.randint(100000, 999999)
         session.add(
             InventorySummary(
                 id=id,
@@ -86,10 +86,11 @@ def process_route_step(session, work_order, route_step, step_no, is_last_step):
     quantity_in_progress = (
         session.query(CompleteLog)
         .filter(CompleteLog.work_order_id == work_order.id)
+        .order_by(CompleteLog.timestamp.desc())
         .first()
     )
     if quantity_in_progress is None:
-        quantity_in_progress = work_order.quantity
+        quantity_in_progress = work_order.original_quantity
     else:
         quantity_in_progress = quantity_in_progress.quantity
 
@@ -141,8 +142,7 @@ def process_route_step(session, work_order, route_step, step_no, is_last_step):
     scrap_quantity = round(quantity_in_progress * random_scrap_rate, 2)
     session.add(
         CompleteLog(
-            id=random.randint(1000000, 9999999),
-            operation_id=operation_id,
+            id=random.randint(10000000, 99999999),
             resource_id=resource,
             operator_id=operator,
             work_order_id=work_order.id,
@@ -150,21 +150,22 @@ def process_route_step(session, work_order, route_step, step_no, is_last_step):
             quantity=quantity_in_progress - scrap_quantity,
         )
     )
-    session.add(
-        ScrapLog(
-            id=random.randint(1000000, 9999999),
-            operation_id=operation_id,
-            resource_id=resource,
-            operator_id=operator,
-            work_order_id=work_order.id,
-            timestamp=random_timestamp,
-            quantity=scrap_quantity,
+    if scrap_quantity > 0:
+        session.add(
+            ScrapLog(
+                id=random.randint(10000000, 99999999),
+                resource_id=resource,
+                operator_id=operator,
+                work_order_id=work_order.id,
+                timestamp=random_timestamp,
+                quantity=scrap_quantity,
+            )
         )
-    )
 
     ## If final completion, update work order and inventory or create record
     if is_last_step:
         work_order.complete_timestamp = random_timestamp
+        work_order.completed_quantity = quantity_in_progress - scrap_quantity
         inv = (
             session.query(InventorySummary)
             .filter(InventorySummary.product_id == work_order.product_id)
@@ -177,7 +178,7 @@ def process_route_step(session, work_order, route_step, step_no, is_last_step):
                 .first()
                 .uom
             )
-            id = random.randint(10000, 99999)
+            id = random.randint(100000, 999999)
             session.add(
                 InventorySummary(
                     id=id,

@@ -20,7 +20,7 @@ def load_master_data_tables(engine):
         df = pd.read_csv(os.path.join("master_data", file))
         ## if the dataframe does not contain a column called id, add one with a random 5 digit integer
         if "id" not in df.columns:
-            random_ids = [random.randint(10000, 99999) for _ in range(len(df))]
+            random_ids = [random.randint(100000, 999999) for _ in range(len(df))]
             df.insert(0, "id", random_ids)
         ## add the data to the database into a table which is the same as the file name
         df.to_sql(file.split(".")[0], con=engine, if_exists="append", index=False)

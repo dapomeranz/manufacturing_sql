@@ -13,7 +13,8 @@ class WorkOrder(ErpBase):
     planned_start_date = Column(Date)
     actual_start_timestamp = Column(DateTime)
     complete_timestamp = Column(DateTime)
-    quantity = Column(Float)
+    original_quantity = Column(Float)
+    completed_quantity = Column(Float)
     uom = Column(String)
 
 
